@@ -1,21 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>Mapas Paralelos</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.sync/0.1.5/leaflet.sync.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.sync/0.1.5/leaflet.sync.min.js"></script>
+  <meta charset="UTF-8" />
+  <title>Mapa de Colombia con Comparación, Zoom y Herramientas de Dibujo</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css" />
+  <style>
+    #map {
+      height: 90vh;
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
-  <div class="map-container">
-    <div class="slider-container">
-      <input type="range" min="0" max="1" step="0.01" value="0.5" id="map-slider">
-    </div>
-    <div id="map1" class="map"></div>
-    <div id="map2" class="map"></div>
-  </div>
-  <script src="script.js"></script>
+  <h2>Mapa de Colombia: Comparación con Barra Deslizante, Zoom y Dibujo</h2>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/digidem/leaflet-side-by-side/leaflet-side-by-side.min.js"></script>
+  <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.min.js"></script>
+
+  <script>
+    // Inicializar el mapa centrado en Colombia con zoom activado y arrastre desactivado
+    var map = L.map('map', {
+      center: [4.5709, -74.2973],
+      zoom: 6,
+      zoomControl: true,      // Activa el control de zoom (+/-)
+      dragging: false,        // Desactiva el arrastre (paneo)
+      scrollWheelZoom: true,  // Permite hacer zoom con la rueda del ratón
+      doubleClickZoom: true,  // Permite hacer zoom con doble clic
+      touchZoom: true         // Permite hacer zoom táctil
+    });
+
+    // Capa izquierda: Mapa político (CartoDB Positron)
+    var politico = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      attribution: '© CartoDB | © OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Capa derecha: Mapa base (OpenStreetMap)
+    var base = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Crear control deslizante para comparar las capas
+    var sideBySide = L.control.sideBySide(politico, base).addTo(map);
+
+    // Activar herramientas de dibujo con Geoman
+    map.pm.addControls({
+      position: 'topleft',
+      drawMarker: true,    // Dibujar puntos
+      drawPolyline: true,  // Dibujar líneas
+      drawPolygon: true,   // Dibujar polígonos
+      editMode: true,      // Editar geometrías
+      removalMode: true    // Eliminar geometrías
+    });
+
+    // Permitir interacción sobre las geometrías dibujadas
+    map.on('pm:create', function(e) {
+      e.layer.pm.enable();  // Habilita la edición para la nueva geometría
+      console.log('Geometría creada:', e.layer.toGeoJSON());
+    });
+  </script>
 </body>
 </html>
